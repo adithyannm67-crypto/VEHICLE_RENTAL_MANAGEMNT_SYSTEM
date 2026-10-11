@@ -1,0 +1,3 @@
+Download mysql-connector-j-<version>.jar from
+https://dev.mysql.com/downloads/connector/j/
+and place it in this folder (rename it to mysql-connector-j.jar to match the README's example commands).
