@@ -2,7 +2,7 @@
 -- Vehicle Rental Management System - Database Schema
 -- ===================================================================
 
-CREATE DATABASE IF NOT EXISTS vehicle_rental_db;
+-- CREATE DATABASE IF NOT EXISTS vehicle_rental_db;
 USE vehicle_rental_db;
 
 -- ---------------------------------------------------------
