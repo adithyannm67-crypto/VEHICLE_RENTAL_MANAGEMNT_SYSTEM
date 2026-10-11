@@ -218,11 +218,6 @@ The script should execute from the project root and use the correct dependency c
 
 ### Administrator
 
-```text
-Email:    admin@vrs.com
-Password: Admin@123
-```
-
 According to the application implementation, the default administrator is created automatically on first startup through `UserDAO.ensureDefaultAdmin`.
 
 Change the default administrator password before using the application in a real environment. Do not deploy the published demonstration credentials to a production system.
