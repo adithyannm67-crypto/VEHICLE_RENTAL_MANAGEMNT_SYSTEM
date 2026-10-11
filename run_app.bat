@@ -1,16 +1,38 @@
+
 @echo off
-REM Compiles and starts the Vehicle Rental System. Contains no credentials.
+REM Compiles and starts the Vehicle Rental System.
+REM No database credentials are stored in this file.
+
 cd /d "%~dp0"
-if not exist lib\*.jar (
-  echo Put mysql-connector-j.jar into the lib folder first.
-  pause
-  exit /b 1
+
+if not exist "lib\mysql-connector-j-26.7.0.jar" (
+    echo Put the MySQL Connector/J JAR in the lib folder.
+    pause
+    exit /b 1
 )
+
+if not exist "lib\dotenv-java-3.2.0.jar" (
+    echo Put dotenv-java-3.2.0.jar in the lib folder.
+    pause
+    exit /b 1
+)
+
+if not exist ".env" (
+    echo Missing .env file in the project root.
+    pause
+    exit /b 1
+)
+
 if not exist out mkdir out
-javac -d out -sourcepath src src\Main.java
+
+javac -cp "lib\*" -d out -sourcepath src src\Main.java
+
 if errorlevel 1 (
-  pause
-  exit /b 1
+    echo Compilation failed.
+    pause
+    exit /b 1
 )
-for %%J in (lib\*.jar) do set JAR=%%J
-java -cp "out;%JAR%" Main
+
+java -cp "out;lib\*" Main
+
+pause
