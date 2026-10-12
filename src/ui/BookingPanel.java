@@ -2,8 +2,11 @@ package ui;
 
 import model.User;
 import model.Vehicle;
+import service.CardPaymentProcessor;
 import service.CashPaymentProcessor;
+import service.PaymentMethodProcessor;
 import service.RentalService;
+import service.UpiPaymentProcessor;
 import ui.Widgets.AppButton;
 import ui.Widgets.Banner;
 import ui.Widgets.Card;
@@ -26,6 +29,7 @@ public class BookingPanel extends Screen {
 
     private JSpinner pickup;
     private JSpinner returnDate;
+    private final JComboBox<String> paymentMethod = Theme.style(new JComboBox<>(new String[]{"CASH", "CARD", "UPI"}));
     private final JLabel daysLabel = Theme.label("-", Theme.font(14), Theme.TEXT);
     private final JLabel rateLabel = Theme.label("-", Theme.font(14), Theme.TEXT);
     private final JLabel extrasLabel = Theme.label("-", Theme.font(14), Theme.TEXT);
@@ -78,6 +82,8 @@ public class BookingPanel extends Screen {
         dates.setAlignmentX(Component.LEFT_ALIGNMENT);
         dates.setMaximumSize(new Dimension(Integer.MAX_VALUE, dates.getPreferredSize().height));
         rc.add(dates);
+        rc.add(gap(16));
+        rc.add(Theme.formRow("Payment method (simulated)", paymentMethod));
         rc.add(gap(20));
 
         JPanel summary = new JPanel(new GridBagLayout());
@@ -157,6 +163,7 @@ public class BookingPanel extends Screen {
         addDetail("Status", v.getStatus());
         details.revalidate();
         details.repaint();
+        paymentMethod.setSelectedIndex(0);
         banner.clear();
         confirmBtn.setEnabled(true);
         confirmBtn.setText("CONFIRM BOOKING");
@@ -198,6 +205,15 @@ public class BookingPanel extends Screen {
         confirmBtn.setEnabled(true);
     }
 
+    /** Maps the selected method to its (simulated) processor. */
+    private PaymentMethodProcessor selectedProcessor() {
+        switch (paymentMethod.getSelectedIndex()) {
+            case 1: return new CardPaymentProcessor();
+            case 2: return new UpiPaymentProcessor();
+            default: return new CashPaymentProcessor();
+        }
+    }
+
     private void confirm() {
         User u = app.getCurrentUser();
         if (u == null || vehicle == null) return;
@@ -205,8 +221,9 @@ public class BookingPanel extends Screen {
         confirmBtn.setEnabled(false);
         confirmBtn.setText("BOOKING...");
         final int vehicleId = vehicle.getVehicleId();
-        // Payments are not part of this project: the booking is simply recorded (pay at pickup).
-        Async.run(() -> rentalService.bookVehicle(u.getUserId(), vehicleId, p, r, new CashPaymentProcessor()), result -> {
+        // Payments are simulated: the chosen method is recorded on the payment row.
+        final PaymentMethodProcessor processor = selectedProcessor();
+        Async.run(() -> rentalService.bookVehicle(u.getUserId(), vehicleId, p, r, processor), result -> {
             confirmBtn.setText("CONFIRM BOOKING");
             if (result.isSuccess()) {
                 app.showConfirmation(result.getData());
