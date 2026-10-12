@@ -83,7 +83,7 @@ public class BookingPanel extends Screen {
         dates.setMaximumSize(new Dimension(Integer.MAX_VALUE, dates.getPreferredSize().height));
         rc.add(dates);
         rc.add(gap(16));
-        rc.add(Theme.formRow("Payment method (simulated)", paymentMethod));
+        rc.add(Theme.formRow("Payment method", paymentMethod));
         rc.add(gap(20));
 
         JPanel summary = new JPanel(new GridBagLayout());
