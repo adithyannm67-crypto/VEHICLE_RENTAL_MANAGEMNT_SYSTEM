@@ -100,9 +100,17 @@ public class RentalService {
             if (!"CONFIRMED".equalsIgnoreCase(rental.getRentalStatus())) {
                 return ServiceResult.fail("Only a confirmed, active booking can be cancelled.");
             }
+            // Cancellation is allowed only up to the day before pickup.
+            if (!rental.getPickupDate().isAfter(LocalDate.now())) {
+                return ServiceResult.fail("This booking cannot be cancelled anymore because the pickup date has arrived.");
+            }
             rentalDAO.updateRentalStatus(rentalId, "CANCELLED");
+            // Any successful payment for this booking is marked as refunded.
+            boolean refunded = paymentDAO.updatePaymentStatus(rentalId, "REFUNDED");
             vehicleDAO.updateVehicleStatus(rental.getVehicleId(), "AVAILABLE");
-            return ServiceResult.ok("Booking cancelled. The vehicle is now available again.", null);
+            return ServiceResult.ok(refunded
+                    ? "Booking cancelled. Refund completed successfully."
+                    : "Booking cancelled. No successful payment was found, so no refund was needed.", null);
         } catch (SQLException e) {
             return ServiceResult.dbError(e, "Unable to cancel the booking. Please try again.");
         }

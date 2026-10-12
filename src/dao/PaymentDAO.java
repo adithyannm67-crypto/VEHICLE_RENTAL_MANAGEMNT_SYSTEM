@@ -26,6 +26,18 @@ public class PaymentDAO {
         return -1;
     }
 
+    /** Marks a successful payment for the given rental as refunded (used when a booking is cancelled).
+     *  Returns true only when a successful payment row was actually updated. */
+    public boolean updatePaymentStatus(int rentalId, String status) throws SQLException {
+        String sql = "UPDATE payments SET payment_status=? WHERE rental_id=? AND payment_status='SUCCESS'";
+        try (Connection con = DBConnection.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setString(1, status);
+            ps.setInt(2, rentalId);
+            return ps.executeUpdate() > 0;
+        }
+    }
+
     public List<Payment> getPaymentsByRental(int rentalId) throws SQLException {
         List<Payment> list = new ArrayList<>();
         String sql = "SELECT * FROM payments WHERE rental_id = ? ORDER BY payment_id DESC";
