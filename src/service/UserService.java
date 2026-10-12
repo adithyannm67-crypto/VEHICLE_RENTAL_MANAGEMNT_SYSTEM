@@ -60,6 +60,22 @@ public class UserService {
         }
     }
 
+    /** Admin-facing edit of a customer account. Email may change but must remain unique. */
+    public ServiceResult<Void> editCustomer(int userId, String name, String email, String phone, String address) {
+        if (!ValidationUtil.isNotEmpty(name)) return ServiceResult.fail("Name is required.");
+        if (!ValidationUtil.isValidEmail(email)) return ServiceResult.fail("Please enter a valid email address.");
+        if (!ValidationUtil.isValidPhone(phone)) return ServiceResult.fail("Phone number must be exactly 10 digits.");
+        try {
+            if (userDAO.emailExistsForOther(email, userId)) {
+                return ServiceResult.fail("Another customer is already using that email address.");
+            }
+            userDAO.updateCustomer(userId, name.trim(), email.trim(), phone.trim(), address == null ? "" : address.trim());
+            return ServiceResult.ok("Customer updated.", null);
+        } catch (SQLException e) {
+            return ServiceResult.dbError(e, "Unable to update the customer. Please try again.");
+        }
+    }
+
     public List<User> getAllCustomers() throws SQLException {
         return userDAO.getAllCustomers();
     }

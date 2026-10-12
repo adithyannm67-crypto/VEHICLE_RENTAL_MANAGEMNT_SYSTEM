@@ -11,6 +11,20 @@ import java.util.List;
 /** All direct database access for the "users" table. */
 public class UserDAO {
 
+    /** Returns true when the given email is used by any user except the one identified by excludeUserId. */
+    public boolean emailExistsForOther(String email, int excludeUserId) throws SQLException {
+        String sql = "SELECT user_id FROM users WHERE email = ?";
+        try (Connection con = DBConnection.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setString(1, email);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (!rs.next()) return false;
+                if (excludeUserId < 0) return true;
+                return rs.getInt("user_id") != excludeUserId;
+            }
+        }
+    }
+
     public boolean emailExists(String email) throws SQLException {
         String sql = "SELECT user_id FROM users WHERE email = ?";
         try (Connection con = DBConnection.getConnection();
@@ -64,6 +78,20 @@ public class UserDAO {
             ps.setString(2, phone);
             ps.setString(3, address);
             ps.setInt(4, userId);
+            return ps.executeUpdate() >= 0;
+        }
+    }
+
+    /** Admin-facing edit: name, email, phone, address. Password is intentionally left untouched. */
+    public boolean updateCustomer(int userId, String name, String email, String phone, String address) throws SQLException {
+        String sql = "UPDATE users SET name=?, email=?, phone=?, address=? WHERE user_id=?";
+        try (Connection con = DBConnection.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setString(1, name);
+            ps.setString(2, email);
+            ps.setString(3, phone);
+            ps.setString(4, address);
+            ps.setInt(5, userId);
             return ps.executeUpdate() >= 0;
         }
     }
